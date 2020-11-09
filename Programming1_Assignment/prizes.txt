@@ -1,0 +1,52 @@
+Fiji
+4
+0
+4
+Tauranga
+4
+4
+8
+Surf Board
+12
+8
+20
+Paddle Board
+4
+20
+24
+Surf Ski
+40
+24
+64
+Winter Wetsuit
+360
+64
+424
+Summer Wetsuit
+16548
+424
+16972
+Body Board
+36
+16972
+17008
+Booties
+4320
+17008
+21328
+Beach Towel
+12936
+21328
+34264
+Suntan Lotion
+2920
+34264
+37184
+Surfboard Wax
+99400
+37184
+136584
+Coffee
+88000
+136584
+224584

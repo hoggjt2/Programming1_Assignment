@@ -14,6 +14,20 @@ namespace Programming1_Assignment
 {
     class Program
     {
+        //For holding prize data
+        public struct Prize
+        {
+            public string name;
+            public int quantity;
+            public int lowerBound, upperBound;
+            public Prize(string name, int quantity, int lowerBound, int upperBound)
+            {
+                this.name = name;
+                this.quantity = quantity;
+                this.lowerBound = lowerBound;
+                this.upperBound = upperBound;
+            }
+        }
         //For holding data about each student
         public struct Student
         {
@@ -25,21 +39,43 @@ namespace Programming1_Assignment
                 this.phoneNumber = phoneNumber;
             }
         }
-        //For holding the prize pool
-
         static void Main(string[] args)
         {
             string input;
-            string file = @"..\..\class.txt"; //File to read student data from
-            Student[] students = new Student[10]; //Array to hold student data read from file
-            ReadStudentData(students, file); //Load data from file into students array
-
-            //Main input loop.
-            do
+            string file = @"..\..\..\..\class.txt"; //File where student data is kept
+            Student[] students = new Student[21]; //Array to hold student data read from file
+            Prize[] prizePool = new Prize[13]; //An array of all available prizes
+            ReadStudentData(students, @file); //Load data from file into students array
+            //LoadPrizePool(prizePool);
+            ////Main input loop.
+            //do
+            //{
+            //    input = Menu();
+            //    Console.Clear();
+            //} while (input != "Exit");
+            //SellTen(students, prizePool);
+            ShowStudents(students);
+            Console.ReadLine();
+        }
+        public static void SellTen(Student[] students, Prize[] prizePool)
+        {
+            Random rand = new Random();
+            Student[] winners = new Student[10];
+            for(int i=0; i<winners.Length; i++)
             {
-                input = Menu();
-                Console.Clear();
-            } while (input != "Exit");
+                winners[i] = students[rand.Next(22)];
+                for(int j=0; j<i; j++)
+                {
+                    if((winners[j].firstName==winners[i].firstName)&& (winners[j].lastName == winners[i].lastName))
+                    {
+                        i--;
+                    }
+                }
+            }
+            foreach(Student s in winners)
+            {
+                Console.WriteLine(s.firstName+" "+s.lastName);
+            }
         }
         static string Menu()
         {
@@ -82,7 +118,7 @@ namespace Programming1_Assignment
             {
                 for(int pos=0; pos<i; pos++)
                 {
-                    if (students[pos + 1].firstName.CompareTo(students[pos].firstName) == -1)
+                    if (students[pos + 1].lastName.CompareTo(students[pos].lastName) == -1)
                     {
                         temp = students[pos];
                         students[pos] = students[pos + 1];
@@ -104,11 +140,26 @@ namespace Programming1_Assignment
                 Console.WriteLine(s.phoneNumber.PadRight(15));
             }
         }
+        //Choose a prize at random
+        public static string GetPrize(Prize[] prizePool)
+        {
+            Random rand = new Random();
+            int x = rand.Next(3616000);
+            for(int i=0; i<prizePool.Length; i++)
+            {
+                if(x>=prizePool[i].lowerBound && x < prizePool[i].upperBound)
+                {
+                    prizePool[i].quantity--;//Decrement remaining prizepool
+                    return prizePool[i].name;//Return prize name
+                }
+            }
+            return "Better luck next time";//If they lose
+        }
         //Read student data from file, load into array
         public static void ReadStudentData(Student[] students, string file)
         {
             int i = 0;
-            StreamReader sr = new StreamReader(@file);
+            StreamReader sr = new StreamReader(@"..\..\..\..\class.txt");
             while (!sr.EndOfStream)
             {
                 if (i == students.Length)//If array is too small, add extra space
@@ -121,7 +172,7 @@ namespace Programming1_Assignment
             sr.Close();
         }
         //Save students array to file
-        public static void SaveStudentData(Student[] students, string file)
+        public static void WriteStudentData(Student[] students, string file)
         {
             StreamWriter sw = new StreamWriter(@file);
             foreach(Student s in students)
@@ -131,6 +182,17 @@ namespace Programming1_Assignment
                 sw.WriteLine(s.phoneNumber);
             }
             sw.Close();
+        }
+        public static void LoadPrizePool(Prize[] prizePool)
+        {
+            StreamReader sr = new StreamReader(@"..\..\..\..\prizes.txt");
+            int i = 0;
+            while (!sr.EndOfStream)
+            {
+                prizePool[i] = new Prize(sr.ReadLine(), Convert.ToInt32(sr.ReadLine()), Convert.ToInt32(sr.ReadLine()), Convert.ToInt32(sr.ReadLine()));
+                i++;
+            }
+     
         }
     }
 }
