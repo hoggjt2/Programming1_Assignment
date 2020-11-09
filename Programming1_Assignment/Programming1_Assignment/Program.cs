@@ -25,10 +25,12 @@ namespace Programming1_Assignment
                 this.phoneNumber = phoneNumber;
             }
         }
+        //For holding the prize pool
+
         static void Main(string[] args)
         {
             string input;
-            string file = "..\..\class.txt"; //File to read student data from
+            string file = @"..\..\class.txt"; //File to read student data from
             Student[] students = new Student[10]; //Array to hold student data read from file
             ReadStudentData(students, file); //Load data from file into students array
 
@@ -43,6 +45,51 @@ namespace Programming1_Assignment
         {
             Console.Write("Please enter command: ");
             return Console.ReadLine();
+        }
+        //Change a students phone number. Returns true is student found, else false
+        static bool ChangePhoneNumber(Student[] students)
+        {
+            string searchParameter;
+            Console.Write("Please enter a students name or phone number: ");
+            searchParameter = Console.ReadLine();
+            for(int i=0; i<students.Length; i++)
+            {
+                if ((   searchParameter == students[i].firstName)//First name match
+                    || (searchParameter == students[i].lastName)//Last name match
+                    || (searchParameter == students[i].phoneNumber)//Phone number match
+                    || (searchParameter == students[i].firstName+" "+ students[i].firstName))//Full name match
+                {
+                    Console.Write(students[i].firstName.PadLeft(15));
+                    Console.Write(students[i].lastName.PadRight(15));
+                    Console.WriteLine(students[i].phoneNumber.PadRight(15));
+                    Console.Write("Is this the correct student?(y/n): ");
+                    if(Console.ReadLine() == "y")
+                    {
+                        Console.Write("Please enter new phone number: ");
+                        students[i].phoneNumber = Console.ReadLine();
+                        return true;
+                    }
+                }
+            }
+            Console.WriteLine("Student not found.");
+            return false;
+        }
+        //Sort students into ascending order
+        static void Sort(Student[] students)
+        {
+            Student temp;
+            for(int i=0; i<students.Length; i++)
+            {
+                for(int pos=0; pos<i; pos++)
+                {
+                    if (students[pos + 1].firstName.CompareTo(students[pos].firstName) == -1)
+                    {
+                        temp = students[pos];
+                        students[pos] = students[pos + 1];
+                        students[pos + 1] = temp;
+                    }
+                }
+            }
         }
         //Display all student data in array
         static void ShowStudents(Student[] students)
@@ -71,6 +118,19 @@ namespace Programming1_Assignment
                 students[i] = new Student(sr.ReadLine(), sr.ReadLine(), sr.ReadLine());
                 i++;
             }
+            sr.Close();
+        }
+        //Save students array to file
+        public static void SaveStudentData(Student[] students, string file)
+        {
+            StreamWriter sw = new StreamWriter(@file);
+            foreach(Student s in students)
+            {
+                sw.WriteLine(s.firstName);
+                sw.WriteLine(s.lastName);
+                sw.WriteLine(s.phoneNumber);
+            }
+            sw.Close();
         }
     }
 }
