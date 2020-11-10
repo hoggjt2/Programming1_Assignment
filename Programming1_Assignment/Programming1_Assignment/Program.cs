@@ -42,40 +42,70 @@ namespace Programming1_Assignment
         static void Main(string[] args)
         {
             string input;
-            string file = @"..\..\..\..\class.txt"; //File where student data is kept
+            string class_FileName = @"..\..\..\..\class.txt"; //File where student data is kept
+            string prizes_FileName = @"..\..\..\..\prizes.txt";
             Student[] students = new Student[21]; //Array to hold student data read from file
             Prize[] prizePool = new Prize[13]; //An array of all available prizes
-            ReadStudentData(students, @file); //Load data from file into students array
-            //LoadPrizePool(prizePool);
+            ReadStudentData(students, @class_FileName); //Load data from file into students array
+            LoadPrizePool(prizePool, prizes_FileName);
             ////Main input loop.
             //do
             //{
             //    input = Menu();
             //    Console.Clear();
             //} while (input != "Exit");
+            //ShowPrizePool(prizePool);
             //SellTen(students, prizePool);
-            ShowStudents(students);
+            //ShowStudents(students);
+            Console.WriteLine(WinPrize(prizePool, "Fiji"));
+            //SellTicket(prizePool);
+            ShowPrizePool(prizePool);
             Console.ReadLine();
         }
+        //Select 10 students an random and sell 1 ticket each
         public static void SellTen(Student[] students, Prize[] prizePool)
         {
             Random rand = new Random();
             Student[] winners = new Student[10];
-            for(int i=0; i<winners.Length; i++)
+            for(int i=0; i<winners.Length; i++)//Select 10 students at random, load into winners
             {
-                winners[i] = students[rand.Next(22)];
+                winners[i] = students[rand.Next(21)];
                 for(int j=0; j<i; j++)
                 {
-                    if((winners[j].firstName==winners[i].firstName)&& (winners[j].lastName == winners[i].lastName))
+                    if((winners[j].firstName==winners[i].firstName) && (winners[j].lastName == winners[i].lastName))
                     {
                         i--;
                     }
                 }
             }
-            foreach(Student s in winners)
+            foreach(Student s in winners)//Choose 4 prize(1 ticket) for the 10 students
             {
                 Console.WriteLine(s.firstName+" "+s.lastName);
+                SellTicket(prizePool);
             }
+        }
+        public static int WinPrize(Prize[] prizePool, string wanted)
+        {
+            int tickets = 0;
+            do
+            {
+                tickets++;
+            } while (!SellTicket(prizePool, wanted));
+            return tickets;
+        }
+        public static bool SellTicket(Prize[] prizePool, string wanted = "noItem")
+        {
+            bool prizeWon = false;
+            string prize;
+            for (int i = 1; i < 5; i++)
+            {
+                Console.WriteLine($"Prize {i}: {prize=GetPrize(prizePool)}");
+                if (prize == wanted)
+                {
+                    prizeWon = true;
+                }
+            }
+            return prizeWon;
         }
         static string Menu()
         {
@@ -130,14 +160,24 @@ namespace Programming1_Assignment
         //Display all student data in array
         static void ShowStudents(Student[] students)
         {
-            Console.Write("First Name".PadLeft(15));
-            Console.Write("Last Name".PadRight(15));
-            Console.WriteLine("Phone Number".PadRight(15));
+            Console.Write("First Name".PadRight(15));
+            Console.Write("Last Name".PadLeft(20));
+            Console.WriteLine("Phone Number".PadLeft(15));
             foreach (Student s in students)
             {
-                Console.Write(s.firstName.PadLeft(15));
-                Console.Write(s.lastName.PadRight(15));
-                Console.WriteLine(s.phoneNumber.PadRight(15));
+                Console.Write(s.firstName.PadRight(15));
+                Console.Write(s.lastName.PadLeft(20));
+                Console.WriteLine(s.phoneNumber.PadLeft(15));
+            }
+        }
+        public static void ShowPrizePool(Prize[] prizePool)
+        {
+            Console.Write("Prize".PadRight(15));
+            Console.WriteLine("Quantity".PadLeft(15));
+            foreach(Prize p in prizePool)
+            {
+                Console.Write(p.name.PadRight(15));
+                Console.WriteLine(Convert.ToString(p.quantity).PadLeft(15));
             }
         }
         //Choose a prize at random
@@ -183,9 +223,9 @@ namespace Programming1_Assignment
             }
             sw.Close();
         }
-        public static void LoadPrizePool(Prize[] prizePool)
+        public static void LoadPrizePool(Prize[] prizePool,string fileName)
         {
-            StreamReader sr = new StreamReader(@"..\..\..\..\prizes.txt");
+            StreamReader sr = new StreamReader(@fileName);
             int i = 0;
             while (!sr.EndOfStream)
             {
