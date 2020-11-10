@@ -48,6 +48,7 @@ namespace Programming1_Assignment
             Prize[] prizePool = new Prize[13]; //An array of all available prizes
             ReadStudentData(students, @class_FileName); //Read student data from file
             LoadPrizePool(prizePool, prizes_FileName); //Read prize data from file
+            Sort(students);
             double ticketPrice = 2;
             int ticketsSold = 0;
 
@@ -290,11 +291,11 @@ namespace Programming1_Assignment
         static void Sort(Student[] students)
         {
             Student temp;
-            for(int i=0; i<students.Length; i++)
+            for(int i=0; i<students.Length-1; i++)
             {
-                for(int pos=0; pos<i; pos++)
+                for(int pos=0; pos<i-1; pos++)
                 {
-                    if (students[pos + 1].lastName.CompareTo(students[pos].lastName) == -1)
+                    if (students[pos + 1].lastName.CompareTo(students[pos].lastName) == 1)
                     {
                         temp = students[pos];
                         students[pos] = students[pos + 1];
