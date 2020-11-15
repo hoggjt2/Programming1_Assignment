@@ -3,8 +3,9 @@
  * Author:      James Hogg
  * Date:        9/11/2020
  * 
- * Description: A draft of the assignment for programming 1.
- * Due Date:    17/11/2020
+ * Description: Programming 1 Assignment.
+ *              Create a program to manage a large scale raffle.
+ * Due Date:    16/11/2020
 */
 using System;
 using System.ComponentModel.Design;
@@ -39,6 +40,7 @@ namespace Programming1_Assignment
                 this.phoneNumber = phoneNumber;
             }
         }
+        public static int prizesRemaining = 0; //Keep track of remining prize pool. If 0 print warning.
         static void Main(string[] args)
         {
             int input;
@@ -47,7 +49,7 @@ namespace Programming1_Assignment
             Student[] students = new Student[21]; //Array to hold student data read from file
             Prize[] prizePool = new Prize[13]; //An array of all available prizes
             ReadStudentData(students, @class_FileName); //Read student data from file
-            LoadPrizePool(prizePool, prizes_FileName); //Read prize data from file
+            prizesRemaining = LoadPrizePool(prizePool, prizes_FileName); //Read prize data from file
             Sort(students);
             double ticketPrice = 2;
             int ticketsSold = 0;
@@ -62,34 +64,61 @@ namespace Programming1_Assignment
                         ShowStudents(students);
                         break;
                     case 2:
+                        Console.WriteLine("Prize Information");
                         ShowPrizePool(prizePool);
+                        Console.WriteLine();
+                        Console.WriteLine("Sale Information");
+                        Console.WriteLine($"Tickets Sold:     {ticketsSold}");
+                        Console.WriteLine($"Money Made:       {(double)ticketsSold * ticketPrice:C}");
+                        Console.WriteLine($"Prizes Remaining: {prizesRemaining}");
                         break;
                     case 3:
-                        ChangePhoneNumber(students);
+                        students = AddStudent(students);
+                        Sort(students);
                         break;
                     case 4:
+                        RemoveStudent(students);
+                        break;
+                    case 5:
+                        ChangePhoneNumber(students);
+                        break;
+                    case 6:
                         SellTicket(prizePool);
                         ticketsSold++;
                         break;
-                    case 5:
-                        ticketsSold += SellTen(students, prizePool);
-                        break;
-                    case 6:
-                        ticketsSold += WinPrize(prizePool, "Fiji");
-                        break;
                     case 7:
-                        ticketsSold += PurchaseAmount(prizePool, ticketPrice);
+                        ticketsSold += PurchaseAmountValue(prizePool, ticketPrice);
+                        break;
+                    case 8:
+                        Console.Write("Please enter the prize you want to win: ");
+                        string wanted = Console.ReadLine();
+                        int attempts = WinPrize(prizePool, wanted);
+                        Console.WriteLine($"You purchased {attempts} tickets before {wanted} was won.");
+                        break;
+                    case 9:
+                        ReadStudentData(students, class_FileName);
+                        break;
+                    case 10:
+                        prizesRemaining = LoadPrizePool(prizePool, prizes_FileName);
+                        ticketsSold = 0;
+                        Console.WriteLine("Prize Pool Reset");
+                        break;
+                    case 11:
+                        WriteStudentData(students, class_FileName);
+                        Console.WriteLine("Data Saved");
+                        break;
+                    case 12:
+                        RunTests(students, prizePool, ref ticketsSold, ticketPrice);
                         break;
                     case -1:
                         Console.WriteLine("Invalid Input");
-                        Console.ReadLine();
                         break;
-
+                    case 99:
+                        Console.WriteLine("Good Bye.");
+                        break;
                 }
+                Console.ReadLine();
             }while(input != 99);
-            Console.Clear();
-            Console.WriteLine("Good Bye");
-            Console.ReadLine();
         }
         //Select 10 students an random and sell 1 ticket each
         public static int SellTen(Student[] students, Prize[] prizePool)
@@ -112,11 +141,10 @@ namespace Programming1_Assignment
                 Console.WriteLine(s.firstName+" "+s.lastName);
                 SellTicket(prizePool);
             }
-            Console.ReadLine();
             return 10;
         }
         //Sell $ value worth of tickets
-        public static int PurchaseAmount(Prize[] prizePool, double ticketPrice, double moneySpent=-1)
+        public static int PurchaseAmountValue(Prize[] prizePool, double ticketPrice, double moneySpent=-1)
         {
             if (moneySpent < 0)//Ask user for input if parameter not provided
             {
@@ -163,38 +191,52 @@ namespace Programming1_Assignment
                 }
             }
             //Display users results
-            Console.Write("Prize".PadLeft(10));
-            Console.WriteLine("Quantity".PadRight(10));
+            Console.Write("Prize".PadRight(15));
+            Console.WriteLine("Quantity".PadLeft(15));
             foreach(Prize p in prizesWon)
             {
                 if (p.quantity > 0)
                 {
-                    Console.Write(p.name.PadLeft(10));
-                    Console.WriteLine(Convert.ToString(p.quantity).PadRight(10));
+                    Console.Write(p.name.PadRight(15));
+                    Console.WriteLine(Convert.ToString(p.quantity).PadLeft(15));
                 }
             }
-            Console.Write("Losses".PadLeft(10));
-            Console.WriteLine(Convert.ToString(losses).PadRight(10));
-            Console.ReadLine();
+            Console.Write("Losses".PadRight(15));
+            Console.WriteLine(Convert.ToString(losses).PadLeft(15));
             return ticketsSold;//Return number of tickets purchased
         }
         //Continue selling tickets until specified prize is won. Return tickets sold.
         public static int WinPrize(Prize[] prizePool, string wanted)
         {
+            bool prizeFound = false;
+            foreach(Prize p in prizePool)
+            {
+                if(p.name == wanted && p.quantity>0)
+                {
+                    prizeFound = true;
+                }
+            }
+            if (!prizeFound)
+            {
+                Console.WriteLine("Prize was not found in prize pool.");
+                return 0;
+            }
             int tickets = 0;
             do
             {
                 tickets++;
-            } while (!SellTicket(prizePool, wanted));
-            return tickets;
+            } while (GetPrize(prizePool)!=wanted);//SellTicket(prizePool, wanted));
+            while(tickets%4 != 0)
+            {
+                tickets++;
+            }
+            return tickets/4;
         }
         //Sell 1 ticket. Returns true is optional parameter wanted is won.
         public static bool SellTicket(Prize[] prizePool, string wanted = "noItem", int tickets = 1)
         {
             bool prizeWon = false;
             string prize;
-            for (int j = 0; j < tickets; j++)
-            {
                 for (int i = 1; i < 5; i++)
                 {
                     Console.WriteLine($"Prize {i}: {prize = GetPrize(prizePool)}");
@@ -203,13 +245,27 @@ namespace Programming1_Assignment
                         prizeWon = true;
                     }
                 }
-            }
             return prizeWon;
         }
         public static  int Menu()
         {
+            //Present title page
             Console.Clear();
-            Console.Write("Please enter command: ");
+            Console.WriteLine("Raffle Program".PadLeft(35));
+            Console.Write("1. Display Students".PadRight(30));
+            Console.WriteLine("7. Sell Tickets in Bulk");
+            Console.Write("2. Display Prizepool".PadRight(30));
+            Console.WriteLine("8. Sell Until Prize Won");
+            Console.Write("3. Add Student".PadRight(30));
+            Console.WriteLine("9. Reset Students");
+            Console.Write("4. Remove Student".PadRight(30));
+            Console.WriteLine("10. Reset Prizepool");
+            Console.Write("5. Change Phone Number".PadRight(30));
+            Console.WriteLine("11. Save Changes");
+            Console.Write("6. Sell Ticket".PadRight(30));
+            Console.WriteLine("12. Run Functionality Tests");
+            Console.WriteLine();
+            Console.Write("Please enter command: (99 to exit)");
             try
             {
                 return Convert.ToInt32(Console.ReadLine());
@@ -219,16 +275,27 @@ namespace Programming1_Assignment
                 return -1;
             }
         }
-        //Add a student to array
-        public static void AddStudent(Student[] students)
+        //Display help info
+        public static void HelpMenu()
         {
-            Array.Resize(ref students, students.Length + 1);
+            Console.WriteLine("Help Menu Goes Here.");
+        }
+        //Add a student to array
+        public static Student[] AddStudent(Student[] students)
+        {
+            Student[] newArray = new Student[students.Length + 1];
+            for(int i=0; i<students.Length; i++)
+            {
+                newArray[i] = students[i];
+            }
             Console.Write("Please enter students first name: ");
-            students[students.Length - 1].firstName = Console.ReadLine();
+            newArray[newArray.Length-1].firstName = Console.ReadLine();
             Console.Write("Please enter students last name: ");
-            students[students.Length - 1].lastName = Console.ReadLine();
+            newArray[newArray.Length-1].lastName = Console.ReadLine();
             Console.Write("Please enter students phone number: ");
-            students[students.Length - 1].phoneNumber = Console.ReadLine();
+            newArray[newArray.Length-1].phoneNumber = Console.ReadLine();
+            Console.WriteLine("Student added.");
+            return newArray;
         }
         //Remove student from array
         public static void RemoveStudent(Student[] students)
@@ -236,6 +303,7 @@ namespace Programming1_Assignment
             string first, last;
             bool studentFound = false;
             int i = 0;
+            ShowStudents(students);
             Console.Write("Please enter students first name: ");
             first = Console.ReadLine();
             Console.Write("Please enter students last name: ");
@@ -258,44 +326,50 @@ namespace Programming1_Assignment
                 Array.Resize(ref newStudents, newStudents.Length - 1);
             }
             students = newStudents;
+            Console.WriteLine("Student removed.");
         }
         //Change a students phone number. Returns true is student found, else false
         static bool ChangePhoneNumber(Student[] students)
         {
             string searchParameter;
-            Console.Write("Please enter a students name or phone number: ");
-            searchParameter = Console.ReadLine();
-            for(int i=0; i<students.Length; i++)
+            do
             {
-                if ((   searchParameter == students[i].firstName)//First name match
-                    || (searchParameter == students[i].lastName)//Last name match
-                    || (searchParameter == students[i].phoneNumber)//Phone number match
-                    || (searchParameter == students[i].firstName+" "+ students[i].firstName))//Full name match
+                Console.Write("Please enter a students name or phone number: ");
+                searchParameter = Console.ReadLine();
+                for (int i = 0; i < students.Length; i++)
                 {
-                    Console.Write(students[i].firstName.PadLeft(15));
-                    Console.Write(students[i].lastName.PadRight(15));
-                    Console.WriteLine(students[i].phoneNumber.PadRight(15));
-                    Console.Write("Is this the correct student?(y/n): ");
-                    if(Console.ReadLine() == "y")
+                    if ((searchParameter == students[i].firstName)//First name match
+                        || (searchParameter == students[i].lastName)//Last name match
+                        || (searchParameter == students[i].phoneNumber)//Phone number match
+                        || (searchParameter == students[i].firstName + " " + students[i].lastName))//Full name match
                     {
-                        Console.Write("Please enter new phone number: ");
-                        students[i].phoneNumber = Console.ReadLine();
-                        return true;
+                        Console.Write(students[i].firstName.PadLeft(15));
+                        Console.Write(students[i].lastName.PadRight(15));
+                        Console.WriteLine(students[i].phoneNumber.PadRight(15));
+                        Console.Write("Is this the correct student?(y/n): ");
+                        if (Console.ReadLine() == "y")
+                        {
+                            Console.Write("Please enter new phone number: ");
+                            students[i].phoneNumber = Console.ReadLine();
+                            Console.WriteLine("Phone number changed.");
+                            return true;
+                        }
                     }
                 }
-            }
-            Console.WriteLine("Student not found.");
+                Console.WriteLine("Student not found.");
+                Console.Write("Search again? (y/n)");
+            } while (Console.ReadLine() == "y");
             return false;
         }
         //Sort students into ascending order
-        static void Sort(Student[] students)
+        public static void Sort(Student[] students)
         {
             Student temp;
             for(int i=0; i<students.Length-1; i++)
             {
-                for(int pos=0; pos<i-1; pos++)
+                for(int pos=0; pos<students.Length-1; pos++)
                 {
-                    if (students[pos + 1].lastName.CompareTo(students[pos].lastName) == 1)
+                    if (students[pos + 1].lastName.CompareTo(students[pos].lastName) == -1)
                     {
                         temp = students[pos];
                         students[pos] = students[pos + 1];
@@ -316,7 +390,6 @@ namespace Programming1_Assignment
                 Console.Write(s.lastName.PadLeft(20));
                 Console.WriteLine(s.phoneNumber.PadLeft(15));
             }
-            Console.ReadLine();
         }
         //Display current prize pool
         public static void ShowPrizePool(Prize[] prizePool)
@@ -328,7 +401,6 @@ namespace Programming1_Assignment
                 Console.Write(p.name.PadRight(15));
                 Console.WriteLine(Convert.ToString(p.quantity).PadLeft(15));
             }
-            Console.ReadLine();
         }
         //Choose a prize at random
         public static string GetPrize(Prize[] prizePool)
@@ -342,6 +414,7 @@ namespace Programming1_Assignment
                     if (prizePool[i].quantity > 0)//Check remaining quantity
                     {
                         prizePool[i].quantity--;//Decrement remaining prizepool
+                        prizesRemaining--;//Decrease total prizes remaining
                         return prizePool[i].name;//Return prize name
                     }
                     else
@@ -356,7 +429,7 @@ namespace Programming1_Assignment
         public static void ReadStudentData(Student[] students, string file)
         {
             int i = 0;
-            StreamReader sr = new StreamReader(@"..\..\..\..\class.txt");
+            StreamReader sr = new StreamReader(@file);
             while (!sr.EndOfStream)
             {
                 if (i == students.Length)//If array is too small, add extra space
@@ -380,16 +453,45 @@ namespace Programming1_Assignment
             }
             sw.Close();
         }
-        public static void LoadPrizePool(Prize[] prizePool,string fileName)
+        public static int LoadPrizePool(Prize[] prizePool,string fileName)
         {
             StreamReader sr = new StreamReader(@fileName);
             int i = 0;
+            int totalPrizes = 0;
             while (!sr.EndOfStream)
             {
                 prizePool[i] = new Prize(sr.ReadLine(), Convert.ToInt32(sr.ReadLine()), Convert.ToInt32(sr.ReadLine()), Convert.ToInt32(sr.ReadLine()));
+                totalPrizes += prizePool[i].quantity;
                 i++;
             }
-     
+            return totalPrizes;
+        }
+        public static void WritePrizes(Prize[] prizePool, string file)
+        {
+            StreamWriter sw = new StreamWriter(@file);
+            foreach(Prize p in prizePool)
+            {
+                sw.WriteLine(p.name);
+                sw.WriteLine(p.quantity);
+                sw.WriteLine(p.lowerBound);
+                sw.WriteLine(p.upperBound);
+            }
+            sw.Close();
+        }
+        //Run Functionality Tests
+        public static void RunTests(Student[] students, Prize[] prizePool, ref int ticketsSold, double ticketPrice)
+        {
+            Console.WriteLine("Sell ten tickets to ten random students:");
+            ticketsSold += SellTen(students, prizePool);
+            Console.ReadLine();
+            Console.Clear();
+            Console.WriteLine("Sell tickets until Fiji is won:");
+            int attempts = WinPrize(prizePool, "Fiji");
+            Console.WriteLine($"You purchased {attempts} tickets before Fiji was won.");
+            Console.ReadLine();
+            Console.Clear();
+            Console.WriteLine("Purchase $500 of tickets. Report results.");
+            PurchaseAmountValue(prizePool, ticketPrice, 500);
         }
     }
 }
