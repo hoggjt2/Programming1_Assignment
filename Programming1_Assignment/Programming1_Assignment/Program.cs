@@ -6,9 +6,14 @@
  * Description: Programming 1 Assignment.
  *              Create a program to manage a large scale raffle.
  * Due Date:    16/11/2020
+ * 
+ * Notes:   -Running the functionallity tests effects the prize pool. To prevent this, save changes before running
+ *           tests then reset prize pool after.
+ *          -For the sake of speed, buying tickets until a spacific prize is won is done by directly accessing the GetPrize
+ *           method rather than ticket purchases. The number of tickets is then calculated by rounding up to the nearest 
+ *           multiple of 4 then dividing by 4.
 */
 using System;
-using System.ComponentModel.Design;
 using System.IO;
 
 namespace Programming1_Assignment
@@ -488,6 +493,7 @@ namespace Programming1_Assignment
             Console.WriteLine("Sell tickets until Fiji is won:");
             int attempts = WinPrize(prizePool, "Fiji");
             Console.WriteLine($"You purchased {attempts} tickets before Fiji was won.");
+            Console.WriteLine($"This cost {attempts * ticketPrice:C}");
             Console.ReadLine();
             Console.Clear();
             Console.WriteLine("Purchase $500 of tickets. Report results.");
