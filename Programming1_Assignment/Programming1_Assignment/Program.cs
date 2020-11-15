@@ -49,11 +49,11 @@ namespace Programming1_Assignment
         static void Main(string[] args)
         {
             int input;
-            string class_FileName = @"..\..\..\..\class.txt"; //File where student data is kept
-            string prizes_FileName = @"..\..\..\..\prizes.txt"; //File holding prize data
-            Student[] students = new Student[21]; //Array to hold student data read from file
+            string class_FileName = @"class.txt"; //File where student data is kept
+            string prizes_FileName = @"prizes.txt"; //File holding prize data
+            Student[] students = new Student[1]; //Array to hold student data read from file
             Prize[] prizePool = new Prize[13]; //An array of all available prizes
-            ReadStudentData(students, @class_FileName); //Read student data from file
+            ReadStudentData(ref students, @class_FileName); //Read student data from file
             prizesRemaining = LoadPrizePool(prizePool, prizes_FileName); //Read prize data from file
             Sort(students);
             double ticketPrice = 2;
@@ -78,11 +78,11 @@ namespace Programming1_Assignment
                         Console.WriteLine($"Prizes Remaining: {prizesRemaining}");
                         break;
                     case 3:
-                        students = AddStudent(students);
+                        students = AddStudent(ref students);
                         Sort(students);
                         break;
                     case 4:
-                        RemoveStudent(students);
+                        RemoveStudent(ref students);
                         break;
                     case 5:
                         ChangePhoneNumber(students);
@@ -101,7 +101,7 @@ namespace Programming1_Assignment
                         Console.WriteLine($"You purchased {attempts} tickets before {wanted} was won.");
                         break;
                     case 9:
-                        ReadStudentData(students, class_FileName);
+                        ReadStudentData(ref students, class_FileName);
                         break;
                     case 10:
                         prizesRemaining = LoadPrizePool(prizePool, prizes_FileName);
@@ -286,7 +286,7 @@ namespace Programming1_Assignment
             Console.WriteLine("Help Menu Goes Here.");
         }
         //Add a student to array
-        public static Student[] AddStudent(Student[] students)
+        public static Student[] AddStudent(ref Student[] students)
         {
             Student[] newArray = new Student[students.Length + 1];
             for(int i=0; i<students.Length; i++)
@@ -303,7 +303,7 @@ namespace Programming1_Assignment
             return newArray;
         }
         //Remove student from array
-        public static void RemoveStudent(Student[] students)
+        public static void RemoveStudent(ref Student[] students)
         {
             string first, last;
             bool studentFound = false;
@@ -313,7 +313,7 @@ namespace Programming1_Assignment
             first = Console.ReadLine();
             Console.Write("Please enter students last name: ");
             last = Console.ReadLine();
-            Student[] newStudents = students;
+            Student[] newStudents = new Student[students.Length];
             foreach(Student s in students)
             {
                 if(first == s.firstName && last == s.lastName)
@@ -348,9 +348,9 @@ namespace Programming1_Assignment
                         || (searchParameter == students[i].phoneNumber)//Phone number match
                         || (searchParameter == students[i].firstName + " " + students[i].lastName))//Full name match
                     {
-                        Console.Write(students[i].firstName.PadLeft(15));
+                        Console.Write(students[i].firstName.PadRight(15));
                         Console.Write(students[i].lastName.PadRight(15));
-                        Console.WriteLine(students[i].phoneNumber.PadRight(15));
+                        Console.WriteLine(students[i].phoneNumber.PadLeft(15));
                         Console.Write("Is this the correct student?(y/n): ");
                         if (Console.ReadLine() == "y")
                         {
@@ -411,10 +411,10 @@ namespace Programming1_Assignment
         public static string GetPrize(Prize[] prizePool)
         {
             Random rand = new Random();
-            int x = rand.Next(3616000);
+            int x = rand.Next(1, 3616001);
             for(int i=0; i<prizePool.Length; i++)
             {
-                if(x>=prizePool[i].lowerBound && x < prizePool[i].upperBound)
+                if(x>=prizePool[i].lowerBound && x <= prizePool[i].upperBound)
                 {
                     if (prizePool[i].quantity > 0)//Check remaining quantity
                     {
@@ -431,7 +431,7 @@ namespace Programming1_Assignment
             return "Better luck next time";//If they lose
         }
         //Read student data from file, load into array
-        public static void ReadStudentData(Student[] students, string file)
+        public static void ReadStudentData(ref Student[] students, string file)
         {
             int i = 0;
             StreamReader sr = new StreamReader(@file);
